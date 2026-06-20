@@ -1,1 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ad'sHub — Watch Ads, Get Paid</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: #111; background: #fff; }
+    a { text-decoration: none; color: inherit; }
 
+    /* Navbar */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 40px; border-bottom: 1px solid #f0f0f0;
+      background: #fff; position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-size: 20px; font-weight: 600; }
+    .logo span { color: #16a34a; }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a { font-size: 14px; color: #666; }
+    .nav-links a:hover { color: #111; }
+    .btn-primary {
+      background: #16a34a; color: #fff; border: none;
+      padding: 9px 22px; border-radius: 8px; font-size: 14px;
+      font-family: 'Inter', sans-serif; cursor: pointer; font-weight: 500;
+    }
+    .btn-primary:hover { background: #15803d; }
+    .btn-secondary {
+      background: transparent; color: #111; border: 1px solid #ddd;
+      padding: 9px 22px; border-radius: 8px; font-size: 14px;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+    }
+    .btn-secondary:hover { background: #f9f9f9; }
+
+    /* Hero */
+    .hero {
+      text-align: center; padding: 80px 40px 60px;
+      background: #fff;
+    }
+    .hero-badge {
+      display: inline-block; background: #dcfce7; color: #15803d;
+      font-size: 13px; padding: 5px 16px; border-radius: 999px;
+      margin-bottom: 24px; font-weight: 500;
+    }
+    .hero h1 {
+      font-size: 52px; font-weight: 600; line-height: 1.15;
+      letter-spacing: -1.5px; max-width: 600px; margin: 0 auto 20px;
+    }
+    .hero h1 span { color: #16a34a; }
+    .hero p {
+      font-size: 18px; color: #666; max-width: 460px;
+      margin: 0 auto 36px; line-height: 1.7;
+    }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero-actions .btn-primary { padding: 13px 28px; font-size: 16px; }
+    .hero-actions .btn-secondary { padding: 13px 28px; font-size: 16px; }
+
+    /* Stats */
+    .stats {
+      display: flex; justify-content: center; gap: 48px;
+      padding: 32px 40px; border-top: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f0f0f0; background: #f9fafb;
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-val { font-size: 28px; font-weight: 600; color: #111; }
+    .stat-label { font-size: 13px; color: #888; margin-top: 4px; }
+
+    /* How it works */
+    .section { padding: 72px 40px; }
+    .section-label {
+      font-size: 12px; font-weight: 600; color: #16a34a;
+      text-transform: uppercase; letter-spacing: 1px; text-align: center; margin-bottom: 12px;
+    }
+    .section h2 {
+      font-size: 36px; font-weight: 600; text-align: center;
+      letter-spacing: -1px; margin-bottom: 48px;
+    }
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px; max-width: 900px; margin: 0 auto;
+    }
+    .step-card {
+      background: #f9fafb; border-radius: 16px; padding: 28px; text-align: center;
+    }
+    .step-icon { font-size: 40px; margin-bottom: 16px; }
+    .step-num {
+      font-size: 12px; font-weight: 600; color: #16a34a;
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+    }
+    .step-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .step-desc { font-size: 14px; color: #666; line-height: 1.6; }
+
+    /* Features */
+    .features-section { padding: 72px 40px; background: #16a34a; }
+    .features-section .section-label { color: #86efac; }
+    .features-section h2 { color: #fff; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px; max-width: 900px; margin: 0 auto;
+    }
+    .feature-card {
+      background: rgba(255,255,255,0.12); border-radius: 16px;
+      padding: 24px; display: flex; gap: 16px; align-items: flex-start;
+    }
+    .feature-icon { font-size: 28px; flex-shrink: 0; }
+    .feature-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+    .feature-desc { font-size: 14px; color: #bbf7d0; line-height: 1.6; }
+
+    /* Withdrawal */
+    .withdraw-section { padding: 72px 40px; background: #fff; }
+    .withdraw-inner {
+      max-width: 900px; margin: 0 auto;
+      display: flex; gap: 60px; align-items: center; flex-wrap: wrap;
+    }
+    .withdraw-text { flex: 1; min-width: 280px; }
+    .withdraw-text .section-label { text-align: left; }
+    .withdraw-text h2 { text-align: left; margin-bottom: 20px; font-size: 32px; }
+    .withdraw-text p { font-size: 15px; color: #666; line-height: 1.8; margin-bottom: 24px; }
+    .check-list { display: flex; flex-direction: column; gap: 10px; }
+    .check-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #444; }
+    .check-item span { color: #16a34a; font-weight: 600; }
+    .withdraw-card {
+      flex: 1; min-width: 280px; background: #f9fafb;
+      border: 1px solid #e5e7eb; border-radius: 20px; padding: 28px;
+    }
+    .withdraw-card-label { font-size: 13px; color: #888; margin-bottom: 6px; }
+    .withdraw-card-bal { font-size: 40px; font-weight: 600; margin-bottom: 4px; }
+    .withdraw-card-bal span { font-size: 18px; color: #888; font-weight: 400; }
+    .withdraw-card-sub { font-size: 13px; color: #16a34a; margin-bottom: 20px; }
+    .withdraw-notice {
+      background: #fef9c3; border: 1px solid #fde68a; border-radius: 12px;
+      padding: 14px 16px; font-size: 13px; color: #92400e; margin-bottom: 16px;
+      display: flex; gap: 8px; align-items: flex-start;
+    }
+    .withdraw-rate {
+      background: #dcfce7; border-radius: 12px; padding: 12px 16px;
+      display: flex; justify-content: space-between; font-size: 13px;
+    }
+    .withdraw-rate span:last-child { font-weight: 600; color: #15803d; }
+
+    /* Testimonials */
+    .testimonials { padding: 72px 40px; background: #f9fafb; }
+    .testimonials-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px; max-width: 900px; margin: 0 auto;
+    }
+    .testimonial-card {
+      background: #fff; border: 1px solid #e5e7eb;
+      border-radius: 16px; padding: 24px;
+    }
+    .testimonial-text { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 16px; }
+    .testimonial-author { display: flex; align-items: center; gap: 10px; }
+    .author-av {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #dcfce7; display: flex; align-items: center;
+      justify-content: center; font-size: 13px; font-weight: 600; color: #15803d;
+    }
+    .author-name { font-size: 14px; font-weight: 600; }
+    .author-meta { font-size: 12px; color: #888; }
+
+    /* CTA */
+    .cta-section {
+      padding: 88px 40px; text-align: center; background: #fff;
+    }
+    .cta-section h2 { font-size: 40px; font-weight: 600; letter-spacing: -1px; margin-bottom: 16px; }
+    .cta-section p { font-size: 16px; color: #666; margin-bottom: 36px; max-width: 420px; margin-left: auto; margin-right: auto; }
+    .cta-section .btn-primary { padding: 15px 36px; font-size: 16px; }
+
+    /* Footer */
+    footer {
+      padding: 24px 40px; border-top: 1px solid #f0f0f0;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .footer-logo { font-size: 16px; font-weight: 600; }
+    .footer-logo span { color: #16a34a; }
+    .footer-copy { font-size: 13px; color: #888; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 13px; color: #888; }
+    .footer-links a:hover { color: #111; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .nav-links a { display: none; }
+      .hero { padding: 60px 20px 40px; }
+      .hero h1 { font-size: 36px; }
+      .section { padding: 48px 20px; }
+      .features-section { padding: 48px 20px; }
+      .withdraw-section { padding: 48px 20px; }
+      .testimonials { padding: 48px 20px; }
+      .cta-section { padding: 60px 20px; }
+      footer { padding: 20px; flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">Ad's<span>Hub</span></div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="about.html">About</a>
+      <a href="faq.html">FAQ</a>
+      <a href="login.html">Sign in</a>
+      <button class="btn-primary" onclick="location.href='register.html'">Join free</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">Free to join · No subscription needed</div>
+    <h1>Watch ads.<br /><span>Get paid.</span></h1>
+    <p>Earn points every time you watch an ad. Withdraw directly to your local bank — anywhere in the world.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="location.href='register.html'">Start earning free</button>
+      <button class="btn-secondary" onclick="location.href='about.html'">How it works</button>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-val">18K+</div><div class="stat-label">Registered users</div></div>
+    <div class="stat"><div class="stat-val">Free</div><div class="stat-label">Registration</div></div>
+    <div class="stat"><div class="stat-val">10 ads</div><div class="stat-label">Per day limit</div></div>
+    <div class="stat"><div class="stat-val">40+</div><div class="stat-label">Countries supported</div></div>
+  </div>
+
+  <!-- How it works -->
+  <section class="section">
+    <div class="section-label">How it works</div>
+    <h2>Three steps to earning</h2>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-icon">👤</div>
+        <div class="step-num">Step 1</div>
+        <div class="step-title">Create a free account</div>
+        <div class="step-desc">Sign up in seconds — no payment needed. Just your email and a password.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">▶️</div>
+        <div class="step-num">Step 2</div>
+        <div class="step-title">Watch ads daily</div>
+        <div class="step-desc">Watch up to 10 ads per day. Each ad earns you points instantly on completion.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">💰</div>
+        <div class="step-num">Step 3</div>
+        <div class="step-title">Withdraw to your bank</div>
+        <div class="step-desc">Convert points to dollars and withdraw to your local bank account in your currency.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section">
+    <div class="section-label">What you get</div>
+    <h2>More ways to earn</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div>
+          <div class="feature-title">Daily ad rewards</div>
+          <div class="feature-desc">Watch up to 10 ads per day and earn points automatically on completion.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👥</div>
+        <div>
+          <div class="feature-title">Referral bonuses</div>
+          <div class="feature-desc">Invite friends and earn 50 bonus points for every person who joins.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <div>
+          <div class="feature-title">Tasks & offers</div>
+          <div class="feature-desc">Complete surveys, sign-ups, and social tasks for extra points.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <div>
+          <div class="feature-title">Weekly leaderboard</div>
+          <div class="feature-desc">Top earners get bonus points every Sunday. Compete and win.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Withdrawal -->
+  <section class="withdraw-section">
+    <div class="withdraw-inner">
+      <div class="withdraw-text">
+        <div class="section-label">Withdrawals</div>
+        <h2>Your money,<br />your bank</h2>
+        <p>Once you reach 5,000 points ($5.00), you can withdraw directly to any local bank in your country. We support Nigeria, Ghana, Kenya, South Africa, UK, USA, Philippines and more.</p>
+        <div class="check-list">
+          <div class="check-item"><span>✓</span> 1,000 points = $1.00</div>
+          <div class="check-item"><span>✓</span> Minimum withdrawal: 5,000 points</div>
+          <div class="check-item"><span>✓</span> Processed within 24 hours</div>
+          <div class="check-item"><span>✓</span> Local currency conversion included</div>
+        </div>
+      </div>
+      <div class="withdraw-card">
+        <div class="withdraw-card-label">Your balance</div>
+        <div class="withdraw-card-bal">4,820 <span>pts</span></div>
+        <div class="withdraw-card-sub">≈ $4.82 · 180 pts to minimum</div>
+        <div class="withdraw-notice">
+          ⚠️ Minimum withdrawal is 5,000 points ($5.00)
+        </div>
+        <div class="withdraw-rate">
+          <span>Conversion rate</span>
+          <span>1,000 pts = $1.00</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials">
+    <div class="section-label">Users</div>
+    <h2>People already earning</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="testimonial-text">"I withdrew my first $5 after just one week. Super easy and legit!"</div>
+        <div class="testimonial-author">
+          <div class="author-av">AO</div>
+          <div>
+            <div class="author-name">Ada_Obi</div>
+            <div class="author-meta">🇳🇬 Nigeria · 12,400 pts earned</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-text">"Watch ads every morning before work. Already hit $8 this month."</div>
+        <div class="testimonial-author">
+          <div class="author-av">TK</div>
+          <div>
+            <div class="author-name">TechKemi</div>
+            <div class="author-meta">🇳🇬 Nigeria · 9,100 pts earned</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-text">"Referred 5 friends and got bonus points on top of my daily ads."</div>
+        <div class="testimonial-author">
+          <div class="author-av">JD</div>
+          <div>
+            <div class="author-name">JayDev</div>
+            <div class="author-meta">🇬🇭 Ghana · 6,200 pts earned</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>Ready to start earning?</h2>
+    <p>Join 18,000+ people getting paid to watch ads. Free to join, no credit card needed.</p>
+    <button class="btn-primary" onclick="location.href='register.html'">Create free account</button>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-logo">Ad's<span>Hub</span> <span style="font-size:12px;color:#888;font-weight:400;margin-left:6px;">by TechHub</span></div>
+    <div class="footer-copy">© 2026 TechHub Technology Co. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html">Contact</a>
+      <a href="terms.html">Privacy</a>
+    </div>
+  </footer>
+
+</body>
+</html>
