@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch Ads — Ad'sHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: #111; background: #f9fafb; }
+    a { text-decoration: none; color: inherit; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid #f0f0f0; background: #fff; }
+    .logo { font-size: 20px; font-weight: 600; }
+    .logo span { color: #16a34a; }
+    .nav-right { display: flex; align-items: center; gap: 12px; font-size: 14px; color: #666; }
+    .nav-pts { font-weight: 600; color: #111; }
+    .nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #15803d; }
+    .back-bar { padding: 12px 24px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+    .back-bar a { font-size: 14px; color: #666; }
+    .page { max-width: 720px; margin: 0 auto; padding: 24px; }
+    .tracker-card { background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+    .tracker-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .tracker-label { font-size: 14px; font-weight: 500; }
+    .tracker-count { font-size: 14px; font-weight: 600; }
+    .tracker-bar { height: 8px; background: #f0f0f0; border-radius: 999px; margin-bottom: 12px; overflow: hidden; }
+    .tracker-fill { height: 100%; border-radius: 999px; transition: width 0.3s; }
+    .tracker-dots { display: flex; gap: 6px; }
+    .dot { width: 26px; height: 26px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #888; font-weight: 500; }
+    .dot.done { background: #16a34a; color: #fff; }
+    .dot.current { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
+    .player { background: #064e3b; border-radius: 20px; aspect-ratio: 16/9; position: relative; overflow: hidden; margin-bottom: 0; display: flex; align-items: center; justify-content: center; }
+    .player-center { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .player-icon { font-size: 72px; }
+    .player-sublabel { font-size: 14px; color: rgba(255,255,255,0.6); }
+    .player-title { font-size: 18px; font-weight: 500; color: #fff; text-align: center; max-width: 320px; line-height: 1.4; }
+    .pts-badge { position: absolute; top: 16px; left: 16px; background: rgba(22,163,74,0.9); color: #fff; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 999px; }
+    .countdown-badge { position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.55); color: #fff; border-radius: 10px; padding: 8px 14px; text-align: center; }
+    .countdown-num { font-size: 22px; font-weight: 600; }
+    .countdown-sub { font-size: 11px; color: rgba(255,255,255,0.6); }
+    .no-skip { position: absolute; bottom: 50px; right: 16px; background: rgba(0,0,0,0.4); color: rgba(255,255,255,0.5); font-size: 12px; padding: 5px 12px; border-radius: 999px; }
+    .progress-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: rgba(255,255,255,0.2); }
+    .progress-fill { height: 100%; background: #16a34a; transition: width 1s linear; }
+    .overlay { position: absolute; inset: 0; background: rgba(4,47,46,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border-radius: 20px; }
+    .overlay.show { display: flex; }
+    .overlay-circle { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .overlay-title { font-size: 18px; font-weight: 600; color: #fff; }
+    .overlay-sub { font-size: 14px; color: #6ee7b7; }
+    .overlay-bal { font-size: 13px; color: #a7f3d0; }
+    .overlay-btn { margin-top: 8px; background: #16a34a; color: #fff; border: none; padding: 11px 28px; border-radius: 10px; font-size: 14px; font-family: 'Inter', sans-serif; cursor: pointer; font-weight: 600; }
+    .overlay-btn:hover { background: #15803d; }
+    .info-bar { background: #fff; border: 1px solid #f0f0f0; border-top: none; border-radius: 0 0 16px 16px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .info-brand { font-size: 13px; color: #666; }
+    .info-brand strong { color: #111; }
+    .info-earn { font-size: 13px; font-weight: 600; color: #16a34a; }
+    .rules-card { background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+    .rules-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+    .rule { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: #666; margin-bottom: 8px; line-height: 1.5; }
+    .rule span { color: #16a34a; font-weight: 600; flex-shrink: 0; }
+    .next-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+    .next-list { display: flex; flex-direction: column; gap: 10px; }
+    .next-card { background: #fff; border: 1px solid #f0f0f0; border-radius: 14px; padding: 14px; display: flex; gap: 12px; align-items: center; }
+    .next-card.locked { opacity: 0.5; }
+    .next-icon { width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+    .next-info { flex: 1; }
+    .next-brand { font-size: 11px; color: #888; }
+    .next-name { font-size: 13px; font-weight: 500; }
+    .next-pts { font-size: 12px; color: #16a34a; font-weight: 600; margin-top: 3px; }
+    .lock-tag { font-size: 11px; color: #888; }
+    .loading { text-align: center; padding: 60px; color: #888; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Ad's<span>Hub</span></div>
+    <div class="nav-right">
+      🪙 <span class="nav-pts" id="navPts">0</span> pts
+      <div class="nav-avatar" id="navAvatar">ME</div>
+    </div>
+  </nav>
+  <div class="back-bar"><a href="dashboard.html">← Back to dashboard</a></div>
+  <div class="page" id="pageContent">
+    <div class="loading">⏳ Loading ads...</div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://mggidzjjenmynlxugxit.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nZ2lkempqZW5teW5seHVneGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzcwNzEsImV4cCI6MjA5NzExMzA3MX0.YG6gDxk1F_8tT2tCNn0DfEPd0XJrGTxTUe6aJhz_rWw';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const MAX_ADS = 10;
+    let userData = null;
+    let ads = [];
+    let currentIdx = 0;
+    let timeLeft = 0;
+    let totalTime = 0;
+    let timer = null;
+    let watched = 0;
+    let totalPts = 0;
+
+    async function loadPage() {
+      const { data: { user } } = await db.auth.getUser();
+      if (!user) { location.href = 'login.html'; return; }
+      const { data } = await db.from('users').select('*').eq('id', user.id).single();
+      if (!data) { location.href = 'login.html'; return; }
+      userData = data;
+      watched = data.ads_watched_today || 0;
+      totalPts = data.points || 0;
+      document.getElementById('navPts').textContent = totalPts.toLocaleString();
+      document.getElementById('navAvatar').textContent = data.first_name[0] + data.last_name[0];
+      const { data: adsData } = await db.from('ads').select('*').eq('is_active', true);
+      ads = adsData || [];
+      renderPage();
+    }
+
+    function renderPage() {
+      const ad = ads[currentIdx];
+      if (!ad) return;
+      totalTime = ad.duration;
+      timeLeft = ad.duration;
+
+      document.getElementById('pageContent').innerHTML = `
+        <div class="tracker-card">
+          <div class="tracker-top">
+            <div class="tracker-label">Daily ads watched</div>
+            <div class="tracker-count" id="trackerCount">${watched} / ${MAX_ADS}</div>
+          </div>
+          <div class="tracker-bar"><div class="tracker-fill" id="trackerFill" style="width:${(watched/MAX_ADS)*100}%;background:${watched>=MAX_ADS?'#ef4444':watched>=7?'#f59e0b':'#16a34a'}"></div></div>
+          <div class="tracker-dots" id="trackerDots">
+            ${Array.from({length:MAX_ADS}).map((_,i)=>`<div class="dot ${i<watched?'done':i===watched?'current':''}">${i<watched?'✓':i+1}</div>`).join('')}
+          </div>
+        </div>
+
+        <div class="player" id="player">
+          <div class="pts-badge">🪙 +${ad.points} pts</div>
+          <div class="countdown-badge">
+            <div class="countdown-num" id="countdown">${ad.duration}</div>
+            <div class="countdown-sub">seconds</div>
+          </div>
+          <div class="player-center">
+            <div class="player-icon">${ad.icon}</div>
+            <div class="player-sublabel">Now playing ad</div>
+            <div class="player-title">${ad.title} — ${ad.brand}</div>
+          </div>
+          <div class="no-skip">Cannot skip this ad</div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+          <div class="overlay" id="doneOverlay">
+            <div class="overlay-circle" style="background:#16a34a">✓</div>
+            <div class="overlay-title">+${ad.points} points earned!</div>
+            <div class="overlay-sub">${ad.brand} ad completed</div>
+            <div class="overlay-bal" id="overlayBal">Balance: ${totalPts.toLocaleString()} pts</div>
+            <button class="overlay-btn" onclick="nextAd()">Watch next ad</button>
+          </div>
+
+          <div class="overlay" id="limitOverlay">
+            <div class="overlay-circle" style="background:#ef4444">🚫</div>
+            <div class="overlay-title">Daily limit reached!</div>
+            <div class="overlay-sub">You've watched all 10 ads for today.</div>
+            <div class="overlay-bal">Come back tomorrow! Resets at midnight.</div>
+            <button class="overlay-btn" onclick="location.href='dashboard.html'">Back to dashboard</button>
+          </div>
+        </div>
+
+        <div class="info-bar">
+          <div class="info-brand">Ad by <strong>${ad.brand}</strong></div>
+          <div class="info-earn">🪙 Earn ${ad.points} points on completion</div>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-title">ℹ️ How points are credited</div>
+          <div class="rule"><span>✓</span> Watch the full ad without closing or switching tabs.</div>
+          <div class="rule"><span>✓</span> Points are credited immediately after the ad ends.</div>
+          <div class="rule"><span>✓</span> You can watch up to 10 ads per day. Resets at midnight.</div>
+          <div class="rule"><span>✓</span> Skipping or fast-forwarding cancels the point reward.</div>
+        </div>
+
+        <div class="next-title">More ads to watch</div>
+        <div class="next-list">
+          ${ads.slice(currentIdx+1, currentIdx+4).map((a,i)=>`
+            <div class="next-card ${i>0?'locked':''}">
+              <div class="next-icon">${a.icon}</div>
+              <div class="next-info">
+                <div class="next-brand">${a.brand}</div>
+                <div class="next-name">${a.title}</div>
+                <div class="next-pts">🪙 ${a.pts || a.points} pts · ${Math.floor(a.duration/60)}:${String(a.duration%60).padStart(2,'0')}</div>
+              </div>
+              ${i>0?'<div class="lock-tag">🔒 Locked</div>':''}
+            </div>`).join('')}
+        </div>
+      `;
+      startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      timer = setInterval(() => {
+        timeLeft--;
+        const pct = Math.round(((totalTime - timeLeft) / totalTime) * 100);
+        const cd = document.getElementById('countdown');
+        const pf = document.getElementById('progressFill');
+        if (cd) cd.textContent = timeLeft;
+        if (pf) pf.style.width = pct + '%';
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          creditPoints();
+        }
+      }, 1000);
+    }
+
+    async function creditPoints() {
+      if (watched >= MAX_ADS) { document.getElementById('limitOverlay').classList.add('show'); return; }
+      const ad = ads[currentIdx];
+      watched++;
+      totalPts += ad.points;
+      document.getElementById('navPts').textContent = totalPts.toLocaleString();
+      // Update in Supabase
+      await db.from('users').update({
+        points: totalPts,
+        ads_watched_today: watched,
+        total_ads_watched: (userData.total_ads_watched || 0) + 1,
+      }).eq('id', userData.id);
+      // Record transaction
+      await db.from('transactions').insert([{ user_id: userData.id, type: 'earned', points: ad.points, description: `${ad.brand} ad watched`, ad_id: ad.id }]);
+      // Send notification
+      await db.from('notifications').insert([{ user_id: userData.id, type: 'earnings', title: `+${ad.points} points credited`, description: `You earned ${ad.points} points for watching the ${ad.brand} ad.`, read: false }]);
+      const overlayBal = document.getElementById('overlayBal');
+      if (overlayBal) overlayBal.textContent = `Balance: ${totalPts.toLocaleString()} pts`;
+      document.getElementById('doneOverlay').classList.add('show');
+    }
+
+    function nextAd() {
+      if (watched >= MAX_ADS) { document.getElementById('limitOverlay').classList.add('show'); return; }
+      currentIdx = (currentIdx + 1) % ads.length;
+      renderPage();
+    }
+
+    loadPage();
+  </script>
+</body>
+</html>
