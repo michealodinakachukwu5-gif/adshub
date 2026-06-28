@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leaderboard — Ad'sHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: #111; background: #f9fafb; }
+    a { text-decoration: none; color: inherit; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid #f0f0f0; background: #fff; }
+    .logo { font-size: 20px; font-weight: 600; }
+    .logo span { color: #16a34a; }
+    .back-bar { padding: 12px 24px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+    .back-bar a { font-size: 14px; color: #666; }
+    .page { max-width: 680px; margin: 0 auto; padding: 24px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .tab { padding: 8px 22px; border-radius: 999px; font-size: 13px; cursor: pointer; border: 1px solid #e5e7eb; color: #666; background: #fff; font-family: 'Inter', sans-serif; }
+    .tab.active { background: #16a34a; color: #fff; border-color: #16a34a; }
+    .podium { display: flex; align-items: flex-end; justify-content: center; gap: 16px; margin-bottom: 28px; }
+    .podium-slot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .podium-crown { font-size: 22px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
+    .podium-av { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff; }
+    .podium-name { font-size: 13px; font-weight: 600; text-align: center; }
+    .podium-pts { font-size: 12px; color: #16a34a; font-weight: 600; }
+    .podium-country { font-size: 12px; color: #888; }
+    .podium-block { border-radius: 10px 10px 0 0; width: 88px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.8); }
+    .your-rank { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 16px 20px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+    .your-rank-left { display: flex; align-items: center; gap: 12px; }
+    .your-rank-num { font-size: 24px; font-weight: 700; color: #064e3b; min-width: 40px; }
+    .your-av { width: 34px; height: 34px; border-radius: 50%; background: #bbf7d0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #064e3b; }
+    .your-name { font-size: 14px; font-weight: 600; color: #064e3b; }
+    .your-sub { font-size: 12px; color: #16a34a; margin-top: 2px; }
+    .your-pts { font-size: 16px; font-weight: 700; color: #064e3b; }
+    .list-card { background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; overflow: hidden; margin-bottom: 18px; }
+    .list-header { display: grid; grid-template-columns: 44px 1fr 100px 70px; padding: 10px 18px; background: #f9fafb; font-size: 12px; color: #888; font-weight: 500; border-bottom: 1px solid #f0f0f0; }
+    .list-row { display: grid; grid-template-columns: 44px 1fr 100px 70px; align-items: center; padding: 13px 18px; border-bottom: 1px solid #f9fafb; }
+    .list-row:last-child { border-bottom: none; }
+    .rank-num { font-size: 15px; font-weight: 600; color: #888; }
+    .rank-medal { font-size: 20px; }
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .user-av { width: 34px; height: 34px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #15803d; flex-shrink: 0; }
+    .user-name { font-size: 14px; font-weight: 500; }
+    .user-country { font-size: 12px; color: #888; }
+    .pts-col { font-size: 13px; font-weight: 600; color: #16a34a; }
+    .ads-col { font-size: 13px; color: #888; }
+    .prizes-card { background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 20px; }
+    .prizes-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+    .prizes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .prize-item { background: #f9fafb; border-radius: 14px; padding: 16px; text-align: center; }
+    .prize-icon { font-size: 28px; margin-bottom: 8px; }
+    .prize-place { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .prize-pts { font-size: 14px; font-weight: 600; color: #16a34a; }
+    .prize-desc { font-size: 11px; color: #888; margin-top: 3px; }
+    .reset-notice { text-align: center; font-size: 13px; color: #888; margin-top: 14px; }
+    .loading { text-align: center; padding: 48px; color: #888; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Ad's<span>Hub</span></div>
+    <div style="font-size:13px;color:#888;">Leaderboard</div>
+  </nav>
+  <div class="back-bar"><a href="dashboard.html">← Back to dashboard</a></div>
+  <div class="page">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('weekly',this)">This week</button>
+      <button class="tab" onclick="switchTab('alltime',this)">All time</button>
+    </div>
+    <div id="podiumSection"></div>
+    <div id="yourRankSection"></div>
+    <div id="listSection"><div class="loading">⏳ Loading leaderboard...</div></div>
+    <div class="prizes-card">
+      <div class="prizes-title">🏆 Weekly prizes</div>
+      <div class="prizes-grid">
+        <div class="prize-item"><div class="prize-icon">🥇</div><div class="prize-place">1st place</div><div class="prize-pts">+2,000 pts</div><div class="prize-desc">Credited Sunday</div></div>
+        <div class="prize-item"><div class="prize-icon">🥈</div><div class="prize-place">2nd place</div><div class="prize-pts">+1,000 pts</div><div class="prize-desc">Credited Sunday</div></div>
+        <div class="prize-item"><div class="prize-icon">🥉</div><div class="prize-place">3rd place</div><div class="prize-pts">+500 pts</div><div class="prize-desc">Credited Sunday</div></div>
+      </div>
+    </div>
+    <div class="reset-notice">⏰ Leaderboard resets every Sunday at midnight</div>
+  </div>
+  <script>
+    const SUPABASE_URL = 'https://mggidzjjenmynlxugxit.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nZ2lkempqZW5teW5seHVneGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzcwNzEsImV4cCI6MjA5NzExMzA3MX0.YG6gDxk1F_8tT2tCNn0DfEPd0XJrGTxTUe6aJhz_rWw';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const medals = ['🥇','🥈','🥉'];
+    const podiumColors = ['#d97706','#9ca3af','#b45309'];
+    const podiumHeights = [110, 130, 90];
+    const podiumSizes = [44, 52, 38];
+    const podiumOrder = [1, 0, 2];
+    let currentUser = null;
+    let currentTab = 'weekly';
+
+    function renderPodium(list) {
+      if (list.length < 3) { document.getElementById('podiumSection').innerHTML = ''; return; }
+      document.getElementById('podiumSection').innerHTML = `
+        <div class="podium">
+          ${podiumOrder.map((idx, j) => {
+            const u = list[idx];
+            if (!u) return '';
+            return `<div class="podium-slot">
+              <div class="podium-crown">${idx === 0 ? '👑' : ''}</div>
+              <div class="podium-av" style="width:${podiumSizes[j]}px;height:${podiumSizes[j]}px;background:${idx===0?'#16a34a':idx===1?'#6b7280':'#92400e'};font-size:${idx===0?'18px':'14px'}">${u.first_name[0]}${u.last_name[0]}</div>
+              <div class="podium-name">${u.username}</div>
+              <div class="podium-pts">${(u.points||0).toLocaleString()} pts</div>
+              <div class="podium-country">${u.country||''}</div>
+              <div class="podium-block" style="height:${podiumHeights[j]}px;background:${podiumColors[j]}">${idx+1}</div>
+            </div>`;
+          }).join('')}
+        </div>`;
+    }
+
+    function renderYourRank(list, userId) {
+      const idx = list.findIndex(u => u.id === userId);
+      if (idx === -1) { document.getElementById('yourRankSection').innerHTML = ''; return; }
+      const u = list[idx];
+      document.getElementById('yourRankSection').innerHTML = `
+        <div class="your-rank">
+          <div class="your-rank-left">
+            <div class="your-rank-num">#${idx+1}</div>
+            <div class="your-av">${u.first_name[0]}${u.last_name[0]}</div>
+            <div>
+              <div class="your-name">You (${u.first_name})</div>
+              <div class="your-sub">${(u.points||0).toLocaleString()} pts · ${u.total_ads_watched||0} ads watched</div>
+            </div>
+          </div>
+          <div class="your-pts">${(u.points||0).toLocaleString()} pts</div>
+        </div>`;
+    }
+
+    function renderList(list) {
+      document.getElementById('listSection').innerHTML = `
+        <div class="list-card">
+          <div class="list-header"><div>#</div><div>User</div><div>Points</div><div>Ads</div></div>
+          ${list.map((u, i) => `
+            <div class="list-row">
+              <div>${i < 3 ? `<span class="rank-medal">${medals[i]}</span>` : `<span class="rank-num">${i+1}</span>`}</div>
+              <div class="user-info">
+                <div class="user-av">${u.first_name[0]}${u.last_name[0]}</div>
+                <div>
+                  <div class="user-name">${u.username}</div>
+                  <div class="user-country">${u.country||''}</div>
+                </div>
+              </div>
+              <div class="pts-col">${(u.points||0).toLocaleString()}</div>
+              <div class="ads-col">${u.total_ads_watched||0}</div>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    async function switchTab(tab, el) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('listSection').innerHTML = '<div class="loading">⏳ Loading...</div>';
+      await loadLeaderboard();
+    }
+
+    async function loadLeaderboard() {
+      const { data: users } = await db.from('users').select('*').order('points', { ascending: false }).limit(20);
+      if (!users || users.length === 0) { document.getElementById('listSection').innerHTML = '<div class="loading">No users yet.</div>'; return; }
+      renderPodium(users);
+      renderYourRank(users, currentUser?.id);
+      renderList(users);
+    }
+
+    async function loadPage() {
+      const { data: { user } } = await db.auth.getUser();
+      currentUser = user;
+      await loadLeaderboard();
+    }
+    loadPage();
+  </script>
+</body>
+</html>

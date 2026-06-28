@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Referrals — Ad'sHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: #111; background: #f9fafb; }
+    a { text-decoration: none; color: inherit; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid #f0f0f0; background: #fff; }
+    .logo { font-size: 20px; font-weight: 600; }
+    .logo span { color: #16a34a; }
+    .back-bar { padding: 12px 24px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+    .back-bar a { font-size: 14px; color: #666; }
+    .page { max-width: 680px; margin: 0 auto; padding: 24px; }
+    .hero-banner { background: linear-gradient(135deg, #064e3b, #16a34a); border-radius: 20px; padding: 28px; margin-bottom: 18px; position: relative; overflow: hidden; }
+    .hero-deco { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 100px; opacity: 0.08; }
+    .hero-title { font-size: 22px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+    .hero-desc { font-size: 14px; color: #bbf7d0; margin-bottom: 22px; line-height: 1.6; }
+    .hero-stats { display: flex; gap: 14px; flex-wrap: wrap; }
+    .hero-stat { background: rgba(255,255,255,0.15); border-radius: 12px; padding: 10px 18px; text-align: center; }
+    .hero-stat-val { font-size: 18px; font-weight: 600; color: #fff; }
+    .hero-stat-label { font-size: 11px; color: #bbf7d0; margin-top: 2px; }
+    .card { background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+    .link-row { display: flex; gap: 10px; margin-bottom: 14px; }
+    .link-box { flex: 1; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #666; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .btn-copy { background: #16a34a; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-family: 'Inter', sans-serif; cursor: pointer; font-weight: 600; flex-shrink: 0; transition: background 0.15s; }
+    .btn-copy:hover { background: #15803d; }
+    .btn-copy.copied { background: #064e3b; }
+    .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .share-btn { border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 8px; text-align: center; cursor: pointer; background: #fff; font-family: 'Inter', sans-serif; transition: background 0.15s; }
+    .share-btn:hover { background: #f9fafb; }
+    .share-icon { font-size: 22px; margin-bottom: 5px; }
+    .share-label { font-size: 12px; color: #666; font-weight: 500; }
+    .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .how-step { background: #f9fafb; border-radius: 14px; padding: 16px; text-align: center; }
+    .step-num { width: 28px; height: 28px; background: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #fff; margin: 0 auto 10px; }
+    .step-title { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+    .step-desc { font-size: 12px; color: #666; line-height: 1.5; }
+    .bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .bonus-card { background: #f9fafb; border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; }
+    .bonus-icon { font-size: 26px; }
+    .bonus-val { font-size: 16px; font-weight: 600; }
+    .bonus-label { font-size: 12px; color: #666; margin-top: 2px; }
+    .ref-header { display: grid; grid-template-columns: 1fr 90px 90px 80px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; color: #888; font-weight: 500; margin-bottom: 4px; }
+    .ref-row { display: grid; grid-template-columns: 1fr 90px 90px 80px; align-items: center; padding: 12px 0; border-bottom: 1px solid #f9fafb; }
+    .ref-row:last-child { border-bottom: none; }
+    .ref-user { display: flex; align-items: center; gap: 10px; }
+    .ref-av { width: 32px; height: 32px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #15803d; flex-shrink: 0; }
+    .ref-name { font-size: 13px; font-weight: 500; }
+    .ref-email { font-size: 11px; color: #888; }
+    .ref-date { font-size: 12px; color: #666; }
+    .ref-pts { font-size: 13px; font-weight: 600; }
+    .ref-status { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 999px; display: inline-block; }
+    .status-active { background: #f0fdf4; color: #15803d; }
+    .status-pending { background: #fffbeb; color: #92400e; }
+    .empty-refs { text-align: center; padding: 24px; color: #888; font-size: 14px; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); background: #111; color: #fff; padding: 11px 22px; border-radius: 999px; font-size: 13px; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 99; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Ad's<span>Hub</span></div>
+    <div style="font-size:13px;color:#888;">Referrals</div>
+  </nav>
+  <div class="back-bar"><a href="dashboard.html">← Back to dashboard</a></div>
+  <div class="page">
+    <div class="hero-banner">
+      <div class="hero-deco">🎁</div>
+      <div class="hero-title">Invite friends, earn points</div>
+      <div class="hero-desc">Share your link. Every friend who joins and watches their first ad earns you 50 bonus points instantly.</div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-val" id="totalRefs">0</div><div class="hero-stat-label">Friends referred</div></div>
+        <div class="hero-stat"><div class="hero-stat-val" id="bonusEarned">0 pts</div><div class="hero-stat-label">Bonus earned</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔗 Your referral link</div>
+      <div class="link-row">
+        <div class="link-box" id="refLink">Loading...</div>
+        <button class="btn-copy" id="copyBtn" onclick="copyLink()">Copy</button>
+      </div>
+      <div class="share-grid">
+        <button class="share-btn" onclick="shareWhatsApp()"><div class="share-icon">💬</div><div class="share-label">WhatsApp</div></button>
+        <button class="share-btn" onclick="shareFacebook()"><div class="share-icon">👤</div><div class="share-label">Facebook</div></button>
+        <button class="share-btn" onclick="shareTwitter()"><div class="share-icon">🐦</div><div class="share-label">Twitter</div></button>
+        <button class="share-btn" onclick="shareTelegram()"><div class="share-icon">✈️</div><div class="share-label">Telegram</div></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ℹ️ How it works</div>
+      <div class="how-grid">
+        <div class="how-step"><div class="step-num">1</div><div class="step-title">Share your link</div><div class="step-desc">Send your unique referral link to friends via WhatsApp or social media.</div></div>
+        <div class="how-step"><div class="step-num">2</div><div class="step-title">Friend signs up</div><div class="step-desc">Your friend registers for free using your link.</div></div>
+        <div class="how-step"><div class="step-num">3</div><div class="step-title">Both earn points</div><div class="step-desc">Once they watch their first ad, you get 50 pts and they get 20 pts.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎁 Referral bonuses</div>
+      <div class="bonus-grid">
+        <div class="bonus-card"><div class="bonus-icon">🪙</div><div><div class="bonus-val">50 pts</div><div class="bonus-label">You earn per referral</div></div></div>
+        <div class="bonus-card"><div class="bonus-icon">⭐</div><div><div class="bonus-val">20 pts</div><div class="bonus-label">Friend's welcome bonus</div></div></div>
+        <div class="bonus-card"><div class="bonus-icon">♾️</div><div><div class="bonus-val">Unlimited</div><div class="bonus-label">No referral cap</div></div></div>
+        <div class="bonus-card"><div class="bonus-icon">⚡</div><div><div class="bonus-val">Instant</div><div class="bonus-label">Points credited immediately</div></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">👥 Your referrals</div>
+      <div id="refList"><div class="empty-refs">No referrals yet. Share your link to start earning!</div></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://mggidzjjenmynlxugxit.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nZ2lkempqZW5teW5seHVneGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzcwNzEsImV4cCI6MjA5NzExMzA3MX0.YG6gDxk1F_8tT2tCNn0DfEPd0XJrGTxTUe6aJhz_rWw';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let refCode = '';
+    let refLink = '';
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(refLink).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = '✓ Copied!'; btn.classList.add('copied');
+        showToast('Referral link copied!');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2500);
+      });
+    }
+
+    function shareWhatsApp() { window.open(`https://wa.me/?text=Join Ad'sHub and earn money watching ads! Use my link: ${refLink}`); }
+    function shareFacebook() { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(refLink)}`); }
+    function shareTwitter() { window.open(`https://twitter.com/intent/tweet?text=Join Ad'sHub and earn money watching ads!&url=${encodeURIComponent(refLink)}`); }
+    function shareTelegram() { window.open(`https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=Join Ad'sHub and earn money watching ads!`); }
+
+    async function loadPage() {
+      const { data: { user } } = await db.auth.getUser();
+      if (!user) { location.href = 'login.html'; return; }
+      const { data: userData } = await db.from('users').select('*').eq('id', user.id).single();
+      if (!userData) { location.href = 'login.html'; return; }
+      refCode = userData.referral_code || '';
+      refLink = `${location.origin}/register.html?ref=${refCode}`;
+      document.getElementById('refLink').textContent = refLink;
+      // Load referrals
+      const { data: refs } = await db.from('users').select('*').eq('referred_by', refCode);
+      const totalRefs = refs?.length || 0;
+      const bonusEarned = totalRefs * 50;
+      document.getElementById('totalRefs').textContent = totalRefs;
+      document.getElementById('bonusEarned').textContent = bonusEarned + ' pts';
+      if (refs && refs.length > 0) {
+        document.getElementById('refList').innerHTML = `
+          <div class="ref-header"><div>Friend</div><div>Joined</div><div>Bonus</div><div>Status</div></div>
+          ${refs.map(r => `
+            <div class="ref-row">
+              <div class="ref-user">
+                <div class="ref-av">${r.first_name[0]}${r.last_name[0]}</div>
+                <div><div class="ref-name">${r.first_name} ${r.last_name}</div><div class="ref-email">${r.email}</div></div>
+              </div>
+              <div class="ref-date">${new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+              <div class="ref-pts" style="color:#16a34a">+50 pts</div>
+              <div><span class="ref-status status-active">Active</span></div>
+            </div>`).join('')}`;
+      }
+    }
+    loadPage();
+  </script>
+</body>
+</html>
