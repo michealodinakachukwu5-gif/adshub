@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Points History — Ad'sHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: #111; background: #f9fafb; }
+    a { text-decoration: none; color: inherit; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid #f0f0f0; background: #fff; }
+    .logo { font-size: 20px; font-weight: 600; }
+    .logo span { color: #16a34a; }
+    .back-bar { padding: 12px 24px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+    .back-bar a { font-size: 14px; color: #666; }
+    .page { max-width: 640px; margin: 0 auto; padding: 24px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .summary-card { border-radius: 16px; padding: 16px; border: 1px solid #f0f0f0; }
+    .summary-card.green { background: #16a34a; border-color: #15803d; }
+    .summary-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .summary-card.green .summary-label { color: #bbf7d0; }
+    .summary-val { font-size: 18px; font-weight: 600; color: #111; }
+    .summary-card.green .summary-val { color: #fff; }
+    .summary-sub { font-size: 12px; color: #888; margin-top: 3px; }
+    .summary-card.green .summary-sub { color: #bbf7d0; }
+    .search-wrap { position: relative; margin-bottom: 14px; }
+    .search-wrap input { width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; background: #fff; }
+    .search-wrap input:focus { border-color: #16a34a; }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab { padding: 6px 16px; border-radius: 999px; font-size: 13px; cursor: pointer; border: 1px solid #e5e7eb; color: #666; background: #fff; font-family: 'Inter', sans-serif; }
+    .tab.active { background: #16a34a; color: #fff; border-color: #16a34a; }
+    .tx-card { background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; overflow: hidden; }
+    .tx-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #f9fafb; }
+    .tx-row:last-child { border-bottom: none; }
+    .tx-left { display: flex; align-items: center; gap: 12px; }
+    .tx-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .tx-title { font-size: 14px; font-weight: 500; }
+    .tx-time { font-size: 12px; color: #888; margin-top: 2px; }
+    .tx-pts { font-size: 14px; font-weight: 600; }
+    .tx-pts.earned { color: #16a34a; }
+    .tx-pts.spent { color: #dc2626; }
+    .empty { background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 48px; text-align: center; }
+    .count-text { text-align: center; font-size: 13px; color: #888; margin-top: 14px; }
+    .summary-card.white { background: #fff; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Ad's<span>Hub</span></div>
+    <div style="font-size:13px;color:#888;">Points History</div>
+  </nav>
+  <div class="back-bar"><a href="dashboard.html">← Back to dashboard</a></div>
+  <div class="page">
+    <div class="summary-grid">
+      <div class="summary-card green">
+        <div class="summary-label">Total earned</div>
+        <div class="summary-val" id="totalEarned">0 pts</div>
+        <div class="summary-sub" id="totalEarnedUsd">≈ $0.00</div>
+      </div>
+      <div class="summary-card white">
+        <div class="summary-label">Total withdrawn</div>
+        <div class="summary-val" id="totalSpent" style="color:#dc2626">0 pts</div>
+        <div class="summary-sub" id="totalSpentUsd">≈ $0.00</div>
+      </div>
+      <div class="summary-card white">
+        <div class="summary-label">Current balance</div>
+        <div class="summary-val" id="currentBal">0 pts</div>
+        <div class="summary-sub" id="currentBalUsd">≈ $0.00</div>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search transactions..." oninput="filterTx()" />
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('all',this)">All</button>
+      <button class="tab" onclick="switchTab('earned',this)">Earned</button>
+      <button class="tab" onclick="switchTab('withdrawal',this)">Withdrawals</button>
+    </div>
+    <div id="txList"></div>
+    <div class="count-text" id="countText"></div>
+  </div>
+  <script>
+    const SUPABASE_URL = 'https://mggidzjjenmynlxugxit.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nZ2lkempqZW5teW5seHVneGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzcwNzEsImV4cCI6MjA5NzExMzA3MX0.YG6gDxk1F_8tT2tCNn0DfEPd0XJrGTxTUe6aJhz_rWw';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let allTx = [];
+    let currentTab = 'all';
+
+    function renderTx(list) {
+      const container = document.getElementById('txList');
+      if (list.length === 0) {
+        container.innerHTML = '<div class="empty"><div style="font-size:40px;margin-bottom:12px">📋</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">No transactions yet</div><div style="font-size:14px;color:#888">Watch some ads to start earning points!</div></div>';
+        document.getElementById('countText').textContent = '';
+        return;
+      }
+      container.innerHTML = `<div class="tx-card">${list.map(t => `
+        <div class="tx-row">
+          <div class="tx-left">
+            <div class="tx-icon" style="background:${t.type==='earned'?'#f0fdf4':'#fef2f2'}">${t.type==='earned'?'🪙':'💸'}</div>
+            <div>
+              <div class="tx-title">${t.description}</div>
+              <div class="tx-time">${new Date(t.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+            </div>
+          </div>
+          <div class="tx-pts ${t.type==='earned'?'earned':'spent'}">${t.type==='earned'?'+':''}${t.points.toLocaleString()} pts</div>
+        </div>`).join('')}</div>`;
+      document.getElementById('countText').textContent = `Showing ${list.length} of ${allTx.length} transactions`;
+    }
+
+    function switchTab(tab, el) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      filterTx();
+    }
+
+    function filterTx() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      let filtered = currentTab === 'all' ? allTx : allTx.filter(t => t.type === currentTab);
+      if (search) filtered = filtered.filter(t => t.description?.toLowerCase().includes(search));
+      renderTx(filtered);
+    }
+
+    async function loadPage() {
+      const { data: { user } } = await db.auth.getUser();
+      if (!user) { location.href = 'login.html'; return; }
+      const { data: userData } = await db.from('users').select('points').eq('id', user.id).single();
+      const { data: txData } = await db.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+      allTx = txData || [];
+      const totalEarned = allTx.filter(t => t.type === 'earned').reduce((a,t) => a + t.points, 0);
+      const totalSpent = Math.abs(allTx.filter(t => t.type === 'withdrawal').reduce((a,t) => a + t.points, 0));
+      const bal = userData?.points || 0;
+      document.getElementById('totalEarned').textContent = totalEarned.toLocaleString() + ' pts';
+      document.getElementById('totalEarnedUsd').textContent = '≈ $' + (totalEarned * 0.001).toFixed(2);
+      document.getElementById('totalSpent').textContent = totalSpent.toLocaleString() + ' pts';
+      document.getElementById('totalSpentUsd').textContent = '≈ $' + (totalSpent * 0.001).toFixed(2);
+      document.getElementById('currentBal').textContent = bal.toLocaleString() + ' pts';
+      document.getElementById('currentBalUsd').textContent = '≈ $' + (bal * 0.001).toFixed(2);
+      renderTx(allTx);
+    }
+    loadPage();
+  </script>
+</body>
+</html>

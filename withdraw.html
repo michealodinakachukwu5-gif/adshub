@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Withdraw — Ad'sHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: #111; background: #f9fafb; }
+    a { text-decoration: none; color: inherit; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid #f0f0f0; background: #fff; }
+    .logo { font-size: 20px; font-weight: 600; }
+    .logo span { color: #16a34a; }
+    .nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #15803d; }
+    .back-bar { padding: 12px 24px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+    .back-bar a { font-size: 14px; color: #666; }
+    .page { max-width: 700px; margin: 0 auto; padding: 24px; }
+    .card { background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 22px; margin-bottom: 18px; }
+    .card-title { font-size: 16px; font-weight: 600; margin-bottom: 18px; }
+    .bal-big { font-size: 40px; font-weight: 600; margin-bottom: 4px; }
+    .bal-big span { font-size: 18px; color: #888; font-weight: 400; }
+    .bal-sub { font-size: 14px; color: #16a34a; margin-bottom: 18px; }
+    .bal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+    .bal-mini { background: #f9fafb; border-radius: 12px; padding: 12px; }
+    .bal-mini-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+    .bal-mini-val { font-size: 16px; font-weight: 600; }
+    .notice { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 16px; display: flex; gap: 10px; margin-bottom: 14px; }
+    .notice-icon { font-size: 18px; flex-shrink: 0; }
+    .notice-title { font-size: 13px; font-weight: 600; color: #92400e; margin-bottom: 3px; }
+    .notice-sub { font-size: 12px; color: #b45309; }
+    .rate-row { background: #f0fdf4; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; font-size: 13px; }
+    .rate-row span:last-child { font-weight: 600; color: #15803d; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 500; }
+    .form-group input, .form-group select { width: 100%; padding: 10px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; background: #fff; color: #111; }
+    .form-group input:focus, .form-group select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px #dcfce7; }
+    .pts-wrap { position: relative; }
+    .pts-wrap input { padding-right: 40px; }
+    .pts-suffix { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #888; }
+    .convert-arrow { text-align: center; font-size: 13px; color: #888; margin: 8px 0; }
+    .convert-val { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; margin-bottom: 16px; }
+    .convert-dollar { font-size: 16px; font-weight: 600; color: #16a34a; }
+    .convert-local { font-size: 13px; color: #888; }
+    .btn-submit { width: 100%; background: #16a34a; color: #fff; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-family: 'Inter', sans-serif; cursor: pointer; font-weight: 600; transition: background 0.15s; }
+    .btn-submit:hover { background: #15803d; }
+    .btn-submit:disabled { background: #d1fae5; color: #6ee7b7; cursor: not-allowed; }
+    .error-msg { font-size: 12px; color: #dc2626; margin-top: 5px; display: none; }
+    .error-msg.show { display: block; }
+    .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f9fafb; }
+    .history-item:last-child { border-bottom: none; }
+    .history-bank { font-size: 14px; font-weight: 500; }
+    .history-meta { font-size: 12px; color: #888; margin-top: 2px; }
+    .history-amt { font-size: 14px; font-weight: 600; color: #16a34a; }
+    .history-status { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 999px; margin-top: 3px; display: inline-block; }
+    .status-paid { background: #f0fdf4; color: #15803d; }
+    .status-pending { background: #fffbeb; color: #92400e; }
+    .empty { text-align: center; padding: 24px; color: #888; font-size: 14px; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); align-items: center; justify-content: center; z-index: 99; padding: 20px; }
+    .modal.show { display: flex; }
+    .modal-box { background: #fff; border-radius: 20px; padding: 36px 28px; max-width: 360px; width: 100%; text-align: center; }
+    .modal-circle { width: 64px; height: 64px; background: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px; }
+    .modal-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    .modal-sub { font-size: 14px; color: #666; margin-bottom: 24px; line-height: 1.6; }
+    .modal-btn { background: #16a34a; color: #fff; border: none; padding: 11px 32px; border-radius: 10px; font-size: 14px; font-family: 'Inter', sans-serif; cursor: pointer; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Ad's<span>Hub</span></div>
+    <div class="nav-avatar" id="navAvatar">ME</div>
+  </nav>
+  <div class="back-bar"><a href="dashboard.html">← Back to dashboard</a></div>
+  <div class="page">
+    <div class="card">
+      <div class="card-title">Your balance</div>
+      <div class="bal-big" id="balPts">0 <span>pts</span></div>
+      <div class="bal-sub" id="balUsd">≈ $0.00 USD</div>
+      <div class="bal-grid">
+        <div class="bal-mini"><div class="bal-mini-label">Dollar value</div><div class="bal-mini-val" id="dollarVal">$0.00</div></div>
+        <div class="bal-mini"><div class="bal-mini-label">Total ads watched</div><div class="bal-mini-val" id="totalAds">0</div></div>
+      </div>
+      <div class="notice">
+        <div class="notice-icon">⚠️</div>
+        <div>
+          <div class="notice-title">Minimum withdrawal: 5,000 points ($5.00)</div>
+          <div class="notice-sub" id="noticeMsg">Keep watching ads to reach the minimum!</div>
+        </div>
+      </div>
+      <div class="rate-row"><span>Conversion rate</span><span>1,000 pts = $1.00</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💸 Withdraw funds</div>
+      <div class="form-group">
+        <label>Your country</label>
+        <select id="country" onchange="updateCountry()">
+          <option value="NG">🇳🇬 Nigeria</option>
+          <option value="GH">🇬🇭 Ghana</option>
+          <option value="KE">🇰🇪 Kenya</option>
+          <option value="ZA">🇿🇦 South Africa</option>
+          <option value="US">🇺🇸 United States</option>
+          <option value="GB">🇬🇧 United Kingdom</option>
+          <option value="IN">🇮🇳 India</option>
+          <option value="PH">🇵🇭 Philippines</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Select bank</label><select id="bank"></select></div>
+      <div class="form-group"><label>Account number</label><input type="text" id="accountNumber" placeholder="Enter account number" /></div>
+      <div class="form-group"><label>Account name</label><input type="text" id="accountName" placeholder="Enter account name" /></div>
+      <div class="form-group">
+        <label>Points to withdraw</label>
+        <div class="pts-wrap">
+          <input type="number" id="points" placeholder="Min. 5,000 pts" oninput="updateConvert()" />
+          <div class="pts-suffix">pts</div>
+        </div>
+        <div class="error-msg" id="ptsError">Minimum withdrawal is 5,000 points.</div>
+      </div>
+      <div class="convert-arrow">⇅ converts to</div>
+      <div class="convert-val">
+        <div class="convert-dollar" id="convertDollar">$0.00</div>
+        <div class="convert-local" id="convertLocal">≈ ₦0</div>
+      </div>
+      <button class="btn-submit" id="submitBtn" onclick="submitWithdrawal()" disabled>💸 Withdraw to bank</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Withdrawal history</div>
+      <div id="historyList"><div class="empty">No withdrawals yet.</div></div>
+    </div>
+  </div>
+
+  <div class="modal" id="successModal">
+    <div class="modal-box">
+      <div class="modal-circle">✓</div>
+      <div class="modal-title">Withdrawal requested!</div>
+      <div class="modal-sub" id="modalMsg">Your request has been submitted and will be processed within 24 hours.</div>
+      <button class="modal-btn" onclick="document.getElementById('successModal').classList.remove('show')">Done</button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://mggidzjjenmynlxugxit.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nZ2lkempqZW5teW5seHVneGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzcwNzEsImV4cCI6MjA5NzExMzA3MX0.YG6gDxk1F_8tT2tCNn0DfEPd0XJrGTxTUe6aJhz_rWw';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const MIN_PTS = 5000;
+    const RATE = 0.001;
+    let userBalance = 0;
+    let userId = null;
+
+    const countries = {
+      NG: { symbol: '₦', rate: 1620, banks: ['Access Bank','GTBank','First Bank','Zenith Bank','UBA','Opay','Kuda Bank'] },
+      GH: { symbol: '₵', rate: 15.2, banks: ['GCB Bank','Ecobank Ghana','Fidelity Bank','Absa Ghana','MTN MoMo'] },
+      KE: { symbol: 'KSh', rate: 129, banks: ['KCB Bank','Equity Bank','Co-op Bank','NCBA Bank','M-Pesa'] },
+      ZA: { symbol: 'R', rate: 18.4, banks: ['Standard Bank','FNB','Absa','Nedbank','Capitec'] },
+      US: { symbol: '$', rate: 1, banks: ['Chase','Bank of America','Wells Fargo','Citibank','PayPal'] },
+      GB: { symbol: '£', rate: 0.79, banks: ['Barclays','HSBC','Lloyds','NatWest','Monzo'] },
+      IN: { symbol: '₹', rate: 83.5, banks: ['SBI','HDFC Bank','ICICI Bank','Axis Bank','Paytm'] },
+      PH: { symbol: '₱', rate: 57.2, banks: ['BDO','BPI','Metrobank','UnionBank','GCash'] },
+    };
+
+    function updateCountry() {
+      const code = document.getElementById('country').value;
+      const bankSel = document.getElementById('bank');
+      bankSel.innerHTML = countries[code].banks.map(b => `<option>${b}</option>`).join('');
+      updateConvert();
+    }
+
+    function updateConvert() {
+      const pts = parseInt(document.getElementById('points').value) || 0;
+      const code = document.getElementById('country').value;
+      const c = countries[code];
+      const dollars = (pts * RATE).toFixed(2);
+      const local = Math.round(parseFloat(dollars) * c.rate).toLocaleString();
+      document.getElementById('convertDollar').textContent = '$' + dollars;
+      document.getElementById('convertLocal').textContent = '≈ ' + c.symbol + local;
+      const err = document.getElementById('ptsError');
+      const btn = document.getElementById('submitBtn');
+      if (pts > 0 && pts < MIN_PTS) { err.classList.add('show'); btn.disabled = true; }
+      else if (pts > userBalance) { err.textContent = "You don't have enough points."; err.classList.add('show'); btn.disabled = true; }
+      else if (pts >= MIN_PTS) { err.classList.remove('show'); btn.disabled = false; }
+      else { err.classList.remove('show'); btn.disabled = true; }
+    }
+
+    async function submitWithdrawal() {
+      const pts = parseInt(document.getElementById('points').value);
+      const bank = document.getElementById('bank').value;
+      const accountNumber = document.getElementById('accountNumber').value.trim();
+      const accountName = document.getElementById('accountName').value.trim();
+      const country = document.getElementById('country').value;
+      if (!accountNumber || !accountName) { alert('Please fill in all fields.'); return; }
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true; btn.textContent = 'Processing...';
+      const dollars = (pts * RATE).toFixed(2);
+      await db.from('withdrawals').insert([{ user_id: userId, points: pts, amount_usd: parseFloat(dollars), bank_name: bank, account_number: accountNumber, account_name: accountName, country, status: 'pending' }]);
+      await db.from('users').update({ points: userBalance - pts }).eq('id', userId);
+      await db.from('transactions').insert([{ user_id: userId, type: 'withdrawal', points: -pts, description: `Withdrawal to ${bank}` }]);
+      userBalance -= pts;
+      document.getElementById('balPts').innerHTML = userBalance.toLocaleString() + ' <span>pts</span>';
+      document.getElementById('modalMsg').textContent = `$${dollars} will be sent to your ${bank} account within 24 hours.`;
+      document.getElementById('successModal').classList.add('show');
+      document.getElementById('points').value = '';
+      document.getElementById('convertDollar').textContent = '$0.00';
+      btn.disabled = true; btn.textContent = '💸 Withdraw to bank';
+      loadHistory();
+    }
+
+    async function loadHistory() {
+      const { data } = await db.from('withdrawals').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+      const list = document.getElementById('historyList');
+      if (!data || data.length === 0) { list.innerHTML = '<div class="empty">No withdrawals yet.</div>'; return; }
+      list.innerHTML = data.map(w => `
+        <div class="history-item">
+          <div>
+            <div class="history-bank">${w.bank_name}</div>
+            <div class="history-meta">${w.account_name} · ${(w.points || 0).toLocaleString()} pts · ${new Date(w.created_at).toLocaleDateString()}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="history-amt">$${w.amount_usd}</div>
+            <span class="history-status ${w.status === 'paid' ? 'status-paid' : 'status-pending'}">${w.status}</span>
+          </div>
+        </div>`).join('');
+    }
+
+    async function loadPage() {
+      const { data: { user } } = await db.auth.getUser();
+      if (!user) { location.href = 'login.html'; return; }
+      userId = user.id;
+      const { data } = await db.from('users').select('*').eq('id', user.id).single();
+      if (!data) { location.href = 'login.html'; return; }
+      userBalance = data.points || 0;
+      document.getElementById('navAvatar').textContent = data.first_name[0] + data.last_name[0];
+      document.getElementById('balPts').innerHTML = userBalance.toLocaleString() + ' <span>pts</span>';
+      document.getElementById('balUsd').textContent = '≈ $' + (userBalance * RATE).toFixed(2) + ' USD';
+      document.getElementById('dollarVal').textContent = '$' + (userBalance * RATE).toFixed(2);
+      document.getElementById('totalAds').textContent = data.total_ads_watched || 0;
+      document.getElementById('country').value = data.country || 'NG';
+      document.getElementById('noticeMsg').textContent = userBalance >= MIN_PTS ? 'You have enough points to withdraw!' : `You need ${(MIN_PTS - userBalance).toLocaleString()} more points to reach the minimum.`;
+      updateCountry();
+      loadHistory();
+    }
+
+    loadPage();
+  </script>
+</body>
+</html>
